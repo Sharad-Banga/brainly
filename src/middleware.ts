@@ -4,7 +4,7 @@ import { JWT_SECRET } from "./config.js";
 
 export const userMiddleware = (req:Request , res:Response ,next :NextFunction)=>{
 
-  console.log("middleware reached");
+  console.log("middleware reached ");
   
 
 
