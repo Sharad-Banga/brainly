@@ -5,6 +5,8 @@ import { JWT_SECRET } from "./config.js";
 import { userMiddleware } from "./middleware.js";
 import { random } from "./util.js";
 const app = express();
+import cors from "cors";
+app.use(cors());
 app.use(express.json());
 app.post("/api/v1/signup", async (req, res) => {
     const username = req.body.username;
@@ -38,9 +40,10 @@ app.post("/api/v1/signin", async (req, res) => {
 });
 app.post("/api/v1/content", userMiddleware, (req, res) => {
     const link = req.body.link;
-    const title = req.body.title;
+    const type = req.body.type;
     ContentModel.create({
-        title,
+        title: req.body.title,
+        type,
         link,
         //@ts-ignore
         userId: req.userId,
@@ -83,6 +86,26 @@ app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
         message: "updated shared link"
     });
 });
-app.post("/api/v1/brain/:shareLink", (req, res) => {
+app.post("/api/v1/brain/:shareLink", async (req, res) => {
+    const hash = req.params.shareLink;
+    const link = await LinkModel.findOne({
+        hash
+    });
+    if (!link) {
+        res.status(411).json({
+            message: "sorry"
+        });
+        return;
+    }
+    const content = await ContentModel.find({
+        userId: link.userId
+    });
+    const user = await UserModel.findOne({
+        _id: link.userId
+    });
+    res.json({
+        username: user?.username,
+        content: content
+    });
 });
 app.listen(3000);
