@@ -64,7 +64,24 @@ app.get("/api/v1/content", userMiddleware, async (req, res) => {
         content
     });
 });
-app.delete("/api/v1/content", (req, res) => {
+app.delete("/api/v1/content/:id", userMiddleware, async (req, res) => {
+    try {
+        const contentId = req.params.id;
+        if (!contentId) {
+            res.status(400).json({ message: "Content ID is required" });
+            return;
+        }
+        const deletedContent = await ContentModel.findByIdAndDelete(contentId);
+        if (!deletedContent) {
+            res.status(404).json({ message: "Content not found" });
+            return;
+        }
+        res.json({ message: "Content deleted successfully" });
+    }
+    catch (error) {
+        console.error("Error deleting content:", error);
+        res.status(500).json({ message: "Error deleting content", error });
+    }
 });
 app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
     const share = req.body.share;
